@@ -8,6 +8,7 @@
  * Round steampunk speedometer.
  * One arc covers 80% of the circle, red through yellow to green, with the gap at the bottom.
  * The needle pivots at the center. The label sits halfway from the needle to the arc.
+ * A two-word label stacks, one word on each line.
  * The readout sits centered in the bottom gap.
  *
  * value is 0 (red) to 1 (green). Numbers above 1 are a percent.
@@ -18,7 +19,8 @@
 function createSteamGauge(options) {
   const settings = options || {};
   const size = Number(settings.size) > 0 ? Number(settings.size) : 400;
-  const label = escapeXml(settings.label == null ? "STEAM" : String(settings.label));
+  const rawLabel = settings.label == null ? "STEAM" : String(settings.label);
+  const label = escapeXml(rawLabel);
   const value = normalizeValue(settings.value);
   // readout "warning" replaces the digits. readout "keyhole" replaces them with a lock.
   const warning = settings.readout === "warning";
@@ -87,13 +89,28 @@ function createSteamGauge(options) {
     '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.05) + '" fill="url(#' + gid + '-hub)" stroke="#3d2a0e" stroke-width="' + (size * 0.006) + '"/>',
     '<line x1="' + (cx - size * 0.022) + '" y1="' + cy + '" x2="' + (cx + size * 0.022) + '" y2="' + cy + '" stroke="#3d2a0e" stroke-width="' + (size * 0.006) + '"/>',
     '<ellipse cx="' + cx + '" cy="' + (cy - face * 0.35) + '" rx="' + (face * 0.7) + '" ry="' + (face * 0.28) + '" fill="url(#' + gid + '-glass)"/>',
-    '<text x="' + cx + '" y="' + (cy - arcRadius * 0.5 + size * 0.025) + '" text-anchor="middle" fill="#f4e5c3" font-family="Palatino Linotype, Palatino, Times New Roman, serif" font-size="' + (size * 0.07) + '" letter-spacing="' + (size * 0.006) + '">' + label + "</text>",
+    gaugeLabel(cx, cy - arcRadius * 0.5 + size * 0.025, size, rawLabel),
     // Lock center is 75% of the way from the needle to the outer edge of the arc.
     keyholeReadout
       ? keyhole(cx, cy + (arcRadius + size * 0.015) * 0.75, size, numberColor)
       : '<text x="' + cx + '" y="' + (cy + arcRadius * 0.78) + '" text-anchor="middle" fill="' + numberColor + '" font-family="Palatino Linotype, Palatino, Times New Roman, serif" font-size="' + (size * (warning ? 0.042 : 0.055)) + '">' + escapeXml(readout) + "</text>",
     "</svg>"
   ].join("");
+}
+
+// Two words stack on two lines, centered on the same spot as a single-word label.
+function gaugeLabel(cx, y, size, rawLabel) {
+  const words = rawLabel.trim().split(/\s+/).filter(function (word) {
+    return word.length > 0;
+  });
+  const fontSize = size * 0.07;
+  const style = ' text-anchor="middle" fill="#f4e5c3" font-family="Palatino Linotype, Palatino, Times New Roman, serif" font-size="' + fontSize + '" letter-spacing="' + (size * 0.006) + '"';
+  if (words.length === 2) {
+    const gap = fontSize * 1.05;
+    return '<text x="' + cx + '" y="' + (y - gap / 2) + '"' + style + ">" + escapeXml(words[0]) + "</text>" +
+      '<text x="' + cx + '" y="' + (y + gap / 2) + '"' + style + ">" + escapeXml(words[1]) + "</text>";
+  }
+  return '<text x="' + cx + '" y="' + y + '"' + style + ">" + escapeXml(words.join(" ")) + "</text>";
 }
 
 // Brass lock plate. The dark circle and slot are the keyhole. color is the zone rim.

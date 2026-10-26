@@ -1,6 +1,8 @@
 # SteamGuage
 
-From the NueM8 works: a round brass dial, riveted and glassed. The needle wakes at rest, then sweeps the arc as the boilers take up pressure. Red bids you LOOK. Yellow bids you CHECK. Green says the engine is OK. One plate keeps its counsel behind a keyhole, and the rim of that lock tells the same tale as the words.
+From NueM8 Studios: a round brass dial, riveted and glassed. The needle wakes at rest, then sweeps the arc as the boilers take up pressure. Red bids you LOOK. Yellow bids you CHECK. Green says the engine is OK. One plate keeps its counsel behind a keyhole, and the rim of that lock tells the same tale as the words.
+
+The drawings are kept on [GitHub](https://github.com/Nuem8/SteamGuage). Further work from the shop is on the [NueM8 projects](https://nuem8.com/projects) page.
 
 Copyright (C) 2026 NueM8 LLC. Developed by Kevin Roper.
 
