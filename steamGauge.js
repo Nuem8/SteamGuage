@@ -15,6 +15,17 @@
  * readout "warning" shows LOOK, CHECK, or OK in place of the number.
  * readout "keyhole" draws a lock keyhole there instead.
  * The number still sets the needle.
+ * bezel "seal" adds a wide outer ring: a turned lip and bolts around the rim.
+ * Each bolt slot is turned to its own angle, the way a hand stops a screwdriver.
+ * legend is the engraved line along the top of that ring.
+ *
+ * Version 1.1.0
+ * Since 1.0.0:
+ * The seal bezel is new. bezel "seal" draws the wide ring, a turned lip, and
+ * sixteen bolts. The band inside that lip is plain brass, with no leaf wreath.
+ * legend engraves one line along the top of the ring.
+ * Each bolt slot is turned once, at random, and that turn is kept while the
+ * needle sweeps, so the heads look hand-screwed.
  */
 function createSteamGauge(options) {
   const settings = options || {};
@@ -25,15 +36,16 @@ function createSteamGauge(options) {
   // readout "warning" replaces the digits. readout "keyhole" replaces them with a lock.
   const warning = settings.readout === "warning";
   const keyholeReadout = settings.readout === "keyhole";
+  const seal = settings.bezel === "seal";
   const readout = warning ? zoneWarning(value).toUpperCase() : String(Math.round(value * 100));
   const numberColor = zoneColor(value);
   // Each gauge gets its own gradient ids so several gauges can share one page.
   const gid = "sg" + (createSteamGauge.serial = (createSteamGauge.serial || 0) + 1);
   const cx = size / 2;
   const cy = size / 2;
-  const outer = size * 0.48;
-  const face = size * 0.4;
-  const arcRadius = size * 0.31;
+  const outer = size * (seal ? 0.49 : 0.48);
+  const face = size * (seal ? 0.292 : 0.4);
+  const arcRadius = size * (seal ? 0.225 : 0.31);
   // 80% of the circle. The remaining 20% is the gap at the bottom.
   // 0° is east and angles increase counter-clockwise. 270° is straight down.
   const sweep = 360 * 0.8;
@@ -45,12 +57,13 @@ function createSteamGauge(options) {
   // The stroke is centered on the arc, so the tip stops on the inner edge of that stroke.
   const needleTipRadius = arcRadius - size * 0.015;
   const ticks = tickMarks(cx, cy, arcRadius, startAngle, sweep, 17);
-  const rivets = [0, 45, 90, 135, 180, 225, 270, 315].map(function (angle) {
+  const rivets = seal ? "" : [0, 45, 90, 135, 180, 225, 270, 315].map(function (angle) {
     return rivet(cx, cy, outer * 0.9, angle, size);
   }).join("");
+  const legend = settings.legend == null ? "" : String(settings.legend).trim();
 
   return [
-    '<!-- Copyright (C) 2026 NueM8 LLC. Developed by Kevin Roper. SPDX-License-Identifier: GPL-3.0-only -->',
+    '<!-- Copyright (C) 2026 NueM8 LLC. Developed by Kevin Roper. SteamGauge ' + createSteamGauge.version + '. SPDX-License-Identifier: GPL-3.0-only -->',
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" role="img" aria-label="' + label + " " + Math.round(value * 100) + "% " + (keyholeReadout ? "lock" : warning ? escapeXml(readout) : "") + '">',
     "<defs>",
     radial(gid + "-brass", [
@@ -78,18 +91,25 @@ function createSteamGauge(options) {
     '<stop offset="0" stop-color="#fff8e6" stop-opacity="0.28"/>',
     '<stop offset="0.45" stop-color="#fff8e6" stop-opacity="0"/>',
     "</linearGradient>",
+    seal && legend ? legendPath(gid, cx, cy, size * 0.405) : "",
+    seal ? radial(gid + "-bolt", [
+      [0, "#fff6d8"],
+      [0.42, "#e4c278"],
+      [0.74, "#8d6424"],
+      [1, "#4a3212"]
+    ]) : "",
     "</defs>",
     '<circle cx="' + cx + '" cy="' + cy + '" r="' + outer + '" fill="url(#' + gid + '-brass)" stroke="#3d2a0e" stroke-width="' + (size * 0.012) + '"/>',
-    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (outer * 0.9) + '" fill="none" stroke="#6a4e1d" stroke-width="' + (size * 0.018) + '"/>',
+    seal ? sealBezel(cx, cy, size, gid, legend, settings.screwSlots) : '<circle cx="' + cx + '" cy="' + cy + '" r="' + (outer * 0.9) + '" fill="none" stroke="#6a4e1d" stroke-width="' + (size * 0.018) + '"/>',
     '<circle cx="' + cx + '" cy="' + cy + '" r="' + face + '" fill="url(#' + gid + '-face)" stroke="#e6c98a" stroke-width="' + (size * 0.012) + '"/>',
     arc(cx, cy, arcRadius, startAngle, endAngle, "url(#" + gid + "-scale)", size * 0.03),
     ticks,
     rivets,
-    needle(cx, cy, needleAngle, needleTipRadius, size * 0.03),
-    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.05) + '" fill="url(#' + gid + '-hub)" stroke="#3d2a0e" stroke-width="' + (size * 0.006) + '"/>',
+    needle(cx, cy, needleAngle, needleTipRadius, size * (seal ? 0.02 : 0.03)),
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * (seal ? 0.034 : 0.05)) + '" fill="url(#' + gid + '-hub)" stroke="#3d2a0e" stroke-width="' + (size * 0.006) + '"/>',
     '<line x1="' + (cx - size * 0.022) + '" y1="' + cy + '" x2="' + (cx + size * 0.022) + '" y2="' + cy + '" stroke="#3d2a0e" stroke-width="' + (size * 0.006) + '"/>',
-    '<ellipse cx="' + cx + '" cy="' + (cy - face * 0.35) + '" rx="' + (face * 0.7) + '" ry="' + (face * 0.28) + '" fill="url(#' + gid + '-glass)"/>',
-    gaugeLabel(cx, cy - arcRadius * 0.5 + size * 0.025, size, rawLabel),
+    '<ellipse cx="' + cx + '" cy="' + (cy - face * (seal ? 0.62 : 0.35)) + '" rx="' + (face * (seal ? 0.52 : 0.7)) + '" ry="' + (face * (seal ? 0.14 : 0.28)) + '" fill="url(#' + gid + '-glass)"/>',
+    gaugeLabel(cx, cy - arcRadius * 0.5 + size * 0.025, size, rawLabel, seal ? 0.046 : 0.07),
     // Lock center is 75% of the way from the needle to the outer edge of the arc.
     keyholeReadout
       ? keyhole(cx, cy + (arcRadius + size * 0.015) * 0.75, size, numberColor)
@@ -98,12 +118,14 @@ function createSteamGauge(options) {
   ].join("");
 }
 
+createSteamGauge.version = "1.1.0";
+
 // Two words stack on two lines, centered on the same spot as a single-word label.
-function gaugeLabel(cx, y, size, rawLabel) {
+function gaugeLabel(cx, y, size, rawLabel, scale) {
   const words = rawLabel.trim().split(/\s+/).filter(function (word) {
     return word.length > 0;
   });
-  const fontSize = size * 0.07;
+  const fontSize = size * (scale || 0.07);
   const style = ' text-anchor="middle" fill="#f4e5c3" font-family="Palatino Linotype, Palatino, Times New Roman, serif" font-size="' + fontSize + '" letter-spacing="' + (size * 0.006) + '"';
   if (words.length === 2) {
     const gap = fontSize * 1.05;
@@ -204,6 +226,56 @@ function tickMarks(cx, cy, radius, startAngle, sweep, count) {
   return marks.join("");
 }
 
+// Wide brass ring. A bright lip and a dark chase turn the outer edge.
+// Bolts sit in that chase.
+// The legend is engraved along the top, clear of both.
+function sealBezel(cx, cy, size, gid, legend, screwSlots) {
+  const boltCount = 16;
+  const bolts = [];
+  for (let index = 0; index < boltCount; index += 1) {
+    // Half a step off the cardinals, so the top bolt does not sit on the legend.
+    const angle = index * (360 / boltCount) + 360 / (boltCount * 2);
+    const point = pointOnCircle(cx, cy, size * 0.458, angle);
+    // A slot is the same upside down, so the turn only needs half a circle.
+    const slot = screwSlots && isFinite(screwSlots[index]) ? screwSlots[index] : Math.random() * 180;
+    bolts.push(bolt(point.x, point.y, size * 0.016, slot, gid));
+  }
+  const engraved = legend
+    ? '<text fill="#3d2a0e" font-family="Palatino Linotype, Palatino, Times New Roman, serif" font-size="' + (size * 0.038) + '" letter-spacing="' + (size * 0.004) + '"><textPath href="#' + gid + '-legend" startOffset="50%" text-anchor="middle">' + escapeXml(legend) + "</textPath></text>"
+    : "";
+  return [
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.478) + '" fill="none" stroke="#f7e7c0" stroke-width="' + (size * 0.008) + '"/>',
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.466) + '" fill="none" stroke="#3a2910" stroke-width="' + (size * 0.01) + '"/>',
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.372) + '" fill="none" stroke="#3a2910" stroke-width="' + (size * 0.007) + '"/>',
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.362) + '" fill="none" stroke="#e6c98a" stroke-width="' + (size * 0.004) + '"/>',
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.32) + '" fill="none" stroke="#3a2910" stroke-width="' + (size * 0.005) + '"/>',
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.312) + '" fill="none" stroke="#c9a24a" stroke-width="' + (size * 0.003) + '"/>',
+    bolts.join(""),
+    engraved
+  ].join("");
+}
+
+function legendPath(gid, cx, cy, radius) {
+  const start = pointOnCircle(cx, cy, radius, 150);
+  const end = pointOnCircle(cx, cy, radius, 30);
+  return '<path id="' + gid + '-legend" fill="none" d="M ' + start.x.toFixed(2) + " " + start.y.toFixed(2) + " A " + radius.toFixed(2) + " " + radius.toFixed(2) + " 0 0 1 " + end.x.toFixed(2) + " " + end.y.toFixed(2) + '"/>';
+}
+
+// Domed head on a dark washer. angle is the slot, not the bolt's place on the ring.
+// The bright spot stays on the same side of every head.
+function bolt(x, y, radius, angle, gid) {
+  const rad = angle * Math.PI / 180;
+  const slot = radius * 0.62;
+  const dx = Math.cos(rad) * slot;
+  const dy = -Math.sin(rad) * slot;
+  const sx = x + radius * 0.28;
+  const sy = y + radius * 0.28;
+  return '<circle cx="' + sx.toFixed(2) + '" cy="' + sy.toFixed(2) + '" r="' + (radius * 1.15).toFixed(2) + '" fill="#2a1c0c"/>' +
+    '<circle cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + (radius * 1.34).toFixed(2) + '" fill="#6a4e1d" stroke="#3a2910" stroke-width="' + (radius * 0.14).toFixed(2) + '"/>' +
+    '<circle cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + radius.toFixed(2) + '" fill="url(#' + gid + '-bolt)" stroke="#3a2910" stroke-width="' + (radius * 0.16).toFixed(2) + '"/>' +
+    '<line x1="' + (x - dx).toFixed(2) + '" y1="' + (y - dy).toFixed(2) + '" x2="' + (x + dx).toFixed(2) + '" y2="' + (y + dy).toFixed(2) + '" stroke="#2a1c0c" stroke-width="' + (radius * 0.2).toFixed(2) + '" stroke-linecap="round"/>';
+}
+
 function rivet(cx, cy, radius, angle, size) {
   const point = pointOnCircle(cx, cy, radius, angle);
   return '<circle cx="' + point.x.toFixed(2) + '" cy="' + point.y.toFixed(2) + '" r="' + (size * 0.018) + '" fill="#f3e2b0" stroke="#5c4316" stroke-width="' + (size * 0.004) + '"/>';
@@ -230,12 +302,28 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = { createSteamGauge: createSteamGauge };
 }
 
+// One turn per bolt, kept on the gauge so a needle sweep does not spin the slots.
+function screwSlots(mount) {
+  if (!mount.screwSlots) {
+    const slots = [];
+    for (let index = 0; index < 16; index += 1) {
+      slots.push(Math.random() * 180);
+    }
+    mount.screwSlots = slots;
+  }
+  return mount.screwSlots;
+}
+
 function gaugeOptions(mount, value) {
+  const seal = mount.dataset.bezel === "seal";
   return {
     label: mount.dataset.label || "STEAM",
     value: value,
     size: mount.dataset.size == null ? 280 : Number(mount.dataset.size),
-    readout: mount.dataset.readout === "warning" || mount.dataset.readout === "keyhole" ? mount.dataset.readout : "number"
+    readout: mount.dataset.readout === "warning" || mount.dataset.readout === "keyhole" ? mount.dataset.readout : "number",
+    bezel: seal ? "seal" : "",
+    legend: mount.dataset.legend || "",
+    screwSlots: seal ? screwSlots(mount) : null
   };
 }
 

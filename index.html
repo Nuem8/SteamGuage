@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Copyright (C) 2026 NueM8 LLC. Developed by Kevin Roper. SteamGauge is free software under GNU GPL v3.0. See LICENSE. SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright (C) 2026 NueM8 LLC. Developed by Kevin Roper. SteamGauge 1.1.0 is free software under GNU GPL v3.0. See LICENSE. SPDX-License-Identifier: GPL-3.0-only -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -83,8 +83,8 @@
     <p>The drawings are kept on <a href="https://github.com/Nuem8/SteamGuage">GitHub</a>. Further work from the shop is on the <a href="https://nuem8.com/projects">NueM8 projects</a> page.</p>
     <p>steamGauge.js draws a round steampunk gauge as SVG. An arc covers 80% of the circle, red through yellow to green, with the open gap at the bottom. The needle pivots at the center. Its point meets the arc, and a counterweight extends the opposite way. The label sits halfway from the hub to the arc. The readout sits in the bottom gap.</p>
     <p>Pass a value from 0 to 1, or a percent above 1. On first draw the needle starts at zero and sweeps to that value over one second. Change <code>data-value</code> or call <code>setSteamGauge</code> and it sweeps from the current position to the new number, again over one second. The readout color follows the zone: red, yellow, then green.</p>
-    <p>Set <code>data-readout="warning"</code> to show LOOK, CHECK, or OK in place of the digits. The number still places the needle. Below 34 is LOOK, 34 to 66 is CHECK, and 67 and above is OK. Set <code>data-readout="keyhole"</code> to draw a lock keyhole in that same gap. Its rim uses the same red, yellow, and green. A gauge is any element with class <code>steam-gauge</code>, plus <code>data-label</code>, <code>data-value</code>, and <code>data-size</code>.</p>
-    <p>This page loads four gauges. Every 3.5 seconds one of them moves to a new number so the sweep, the warning word, and the keyhole can be seen.</p>
+    <p>Set <code>data-readout="warning"</code> to show LOOK, CHECK, or OK in place of the digits. The number still places the needle. Below 34 is LOOK, 34 to 66 is CHECK, and 67 and above is OK. Set <code>data-readout="keyhole"</code> to draw a lock keyhole in that same gap. Its rim uses the same red, yellow, and green. Set <code>data-bezel="seal"</code> for the wide outer ring of bolts. <code>data-legend</code> is the engraved line along the top of that ring. A gauge is any element with class <code>steam-gauge</code>, plus <code>data-label</code>, <code>data-value</code>, and <code>data-size</code>.</p>
+    <p>This page loads five gauges. Every 3.5 seconds one of them moves to a new number so the sweep, the warning word, and the keyhole can be seen.</p>
   </header>
   <main>
     <figure>
@@ -106,6 +106,13 @@
       <figcaption>
         <span class="reading">88 — OK</span>
         <span class="tale">The engine sings in the green. Pressure is OK, and the brass may rest.</span>
+      </figcaption>
+    </figure>
+    <figure>
+      <div class="steam-gauge" data-label="PRESSURE" data-value="72" data-size="280" data-readout="warning" data-bezel="seal" data-legend="NUEM8 STEAM GAUGE"></div>
+      <figcaption>
+        <span class="reading">72 — OK</span>
+        <span class="tale">The seal ring carries the name you set. Pressure is OK, and the bolts keep their watch.</span>
       </figcaption>
     </figure>
     <figure>
